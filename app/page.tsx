@@ -13,7 +13,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { getLayoutedElements } from "@/lib/layout"; 
-import { Activity, GitMerge, Swords, ShieldAlert, RefreshCw, X, Calendar, TrendingUp, AlertTriangle } from "lucide-react";
+import { Activity, GitMerge, Swords, ShieldAlert, RefreshCw, X, Calendar, TrendingUp, AlertTriangle, DollarSign, Scale, Globe, Award } from "lucide-react";
 
 // --- TYPES ---
 interface FlowData { nodes: any[]; edges: any[]; }
@@ -25,6 +25,12 @@ interface Scenario {
   outcome_12m: string;
   risk_score: number;
   competitor_reaction: string;
+  risk_matrix: {
+    financial: "Low" | "Medium" | "High";
+    legal: "Low" | "Medium" | "High";
+    market: "Low" | "Medium" | "High";
+    brand: "Low" | "Medium" | "High";
+  };
 }
 
 interface TwinResult {
@@ -44,14 +50,9 @@ export default function LivingStrategicTwin() {
   const [step, setStep] = useState<"input" | "syncing" | "dashboard">("input");
   const [formData, setFormData] = useState({ companyName: "", context: "", options: "" });
   const [result, setResult] = useState<TwinResult | null>(null);
-  
-  // Modal State
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
-
-  // React Flow State
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-
   const [log, setLog] = useState("");
 
   const handleSimulate = async () => {
@@ -70,7 +71,6 @@ export default function LivingStrategicTwin() {
       
       if (!res.ok) throw new Error(data.error);
 
-      // Node Processing
       const initialNodes: Node[] = data.implementation_flowchart.nodes.map((n: any) => ({ 
             id: n.id,
             position: { x: 0, y: 0 }, 
@@ -123,8 +123,8 @@ export default function LivingStrategicTwin() {
               <Activity className="w-5 h-5 text-cyan-400" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white tracking-wide">STRATEGIC TWIN</h1>
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest">Gemini 3 Pro Engine</p>
+              <h1 className="text-2xl font-black text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-blue-400 to-cyan-300 tracking-tight">StratOS</h1>
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest">The Operating System for Strategic Intelligence</p>
             </div>
           </div>
           {step === "dashboard" && (
@@ -159,7 +159,7 @@ export default function LivingStrategicTwin() {
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase">Company Profile</label>
                   <input 
-                    placeholder="e.g. Nvidia"
+                    placeholder="e.g. Netflix"
                     className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-cyan-500 outline-none transition"
                     onChange={e => setFormData({...formData, companyName: e.target.value})}
                   />
@@ -167,7 +167,7 @@ export default function LivingStrategicTwin() {
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase">Strategic Context</label>
                   <textarea 
-                    placeholder="Describe market conditions, recent stock performance, or internal constraints..."
+                    placeholder="e.g. Disney+ just lowered prices. Subscriber growth is flat."
                     className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white h-24 resize-none focus:border-cyan-500 outline-none transition"
                     onChange={e => setFormData({...formData, context: e.target.value})}
                   />
@@ -175,7 +175,7 @@ export default function LivingStrategicTwin() {
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase">Options to Simulate</label>
                   <textarea 
-                    placeholder="List specific strategic moves you are considering..."
+                    placeholder="e.g. 1. Lower prices. 2. Buy sports rights."
                     className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white h-24 resize-none focus:border-cyan-500 outline-none transition"
                     onChange={e => setFormData({...formData, options: e.target.value})}
                   />
@@ -244,30 +244,28 @@ export default function LivingStrategicTwin() {
                   {result.scenarios.map((scen) => (
                     <div 
                       key={scen.id}
-                      onClick={() => setSelectedScenario(scen)} // OPEN MODAL ON CLICK
-                      className={`p-5 rounded-xl border cursor-pointer transition-all hover:scale-[1.02] active:scale-95
+                      onClick={() => setSelectedScenario(scen)} 
+                      className={`p-5 rounded-xl border cursor-pointer transition-all hover:scale-[1.02] active:scale-95 group
                         ${scen.id === result.recommended_id 
                           ? "bg-cyan-950/30 border-cyan-500/50 shadow-[0_0_20px_rgba(6,182,212,0.1)]" 
                           : "bg-white/5 border-white/10 hover:border-white/20"}`}
                     >
                       <div className="flex justify-between mb-3">
-                        <span className="text-xs font-bold text-slate-400">SCENARIO {scen.id}</span>
+                        <span className="text-xs font-bold text-slate-400 group-hover:text-white transition">SCENARIO {scen.id}</span>
                         {scen.id === result.recommended_id && <span className="text-[10px] bg-cyan-500 text-black font-bold px-2 py-0.5 rounded">RECOMMENDED</span>}
                       </div>
                       <h4 className="font-bold text-white mb-2">{scen.title}</h4>
                       <p className="text-xs text-slate-400 mb-4 line-clamp-2">{scen.outcome_12m}</p>
                       
-                      {/* Mini Risk Bar */}
-                      <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                         <div 
-                            className={`h-full ${scen.risk_score > 70 ? 'bg-emerald-500' : 'bg-amber-500'}`} 
-                            style={{ width: `${scen.risk_score}%` }}
-                         ></div>
-                      </div>
-                      <div className="flex justify-between mt-1">
-                        <p className="text-[10px] text-slate-500">Success Probability</p>
-                        <p className="text-[10px] font-bold text-slate-300">{scen.risk_score}%</p>
-                      </div>
+                      {/* Mini Matrix Preview */}
+                      {scen.risk_matrix && (
+                        <div className="grid grid-cols-4 gap-1 mt-4">
+                            <div className={`h-1 rounded-full ${getRiskColor(scen.risk_matrix.financial)}`}></div>
+                            <div className={`h-1 rounded-full ${getRiskColor(scen.risk_matrix.legal)}`}></div>
+                            <div className={`h-1 rounded-full ${getRiskColor(scen.risk_matrix.market)}`}></div>
+                            <div className={`h-1 rounded-full ${getRiskColor(scen.risk_matrix.brand)}`}></div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -275,12 +273,11 @@ export default function LivingStrategicTwin() {
 
               {/* BOTTOM ROW: INTERACTIVE FLOWCHART */}
               <div className="h-125 bg-slate-900/50 border border-white/10 rounded-2xl overflow-hidden relative">
-                <div className="absolute top-4 left-4 z-10 bg-black/80 backdrop-blur px-4 py-2 rounded-lg border border-white/10">
+                 <div className="absolute top-4 left-4 z-10 bg-black/80 backdrop-blur px-4 py-2 rounded-lg border border-white/10">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
                     <GitMerge className="w-4 h-4 text-cyan-400" /> Implementation Blueprint
                   </h3>
                 </div>
-                
                 <ReactFlow 
                   nodes={nodes}
                   edges={edges}
@@ -308,40 +305,25 @@ export default function LivingStrategicTwin() {
         <AnimatePresence>
           {selectedScenario && (
             <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setSelectedScenario(null)}
               className="fixed inset-0 z-100 bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
             >
               <motion.div 
-                initial={{ scale: 0.95, opacity: 0 }} 
-                animate={{ scale: 1, opacity: 1 }} 
-                exit={{ scale: 0.95, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()} // Prevent close on modal click
-                className="bg-[#0f172a] border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-[#0f172a] border border-slate-700 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
               >
                 
                 {/* Modal Header */}
                 <div className="p-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-start">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                        <span className="text-xs font-mono text-cyan-400 bg-cyan-950/50 px-2 py-1 rounded">
-                            SCENARIO {selectedScenario.id}
-                        </span>
-                        {/* If it's the recommended one */}
-                        {result && selectedScenario.id === result.recommended_id && (
-                             <span className="text-[10px] bg-emerald-500 text-black font-bold px-2 py-1 rounded flex items-center gap-1">
-                                <TrendingUp className="w-3 h-3" /> BEST CHOICE
-                             </span>
-                        )}
+                        <span className="text-xs font-mono text-cyan-400 bg-cyan-950/50 px-2 py-1 rounded">SCENARIO {selectedScenario.id}</span>
                     </div>
                     <h2 className="text-2xl font-bold text-white">{selectedScenario.title}</h2>
                   </div>
-                  <button 
-                    onClick={() => setSelectedScenario(null)}
-                    className="p-2 hover:bg-slate-800 rounded-full transition text-slate-400 hover:text-white"
-                  >
+                  <button onClick={() => setSelectedScenario(null)} className="p-2 hover:bg-slate-800 rounded-full transition text-slate-400 hover:text-white">
                     <X className="w-6 h-6" />
                   </button>
                 </div>
@@ -349,73 +331,47 @@ export default function LivingStrategicTwin() {
                 {/* Modal Body */}
                 <div className="p-8 overflow-y-auto space-y-8">
                     
-                    {/* Section 1: Competitor War Game */}
+                    {/* --- THE VISUAL RISK HEATMAP --- */}
+                    {selectedScenario.risk_matrix && (
+                        <div>
+                            <div className="flex items-center gap-2 text-slate-400 font-bold text-sm mb-4 uppercase tracking-wider">
+                                <AlertTriangle className="w-4 h-4" /> Comprehensive Risk Matrix
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <RiskCard icon={<DollarSign className="w-5 h-5"/>} label="Financial" level={selectedScenario.risk_matrix.financial} />
+                                <RiskCard icon={<Scale className="w-5 h-5"/>} label="Legal" level={selectedScenario.risk_matrix.legal} />
+                                <RiskCard icon={<Globe className="w-5 h-5"/>} label="Market" level={selectedScenario.risk_matrix.market} />
+                                <RiskCard icon={<Award className="w-5 h-5"/>} label="Brand" level={selectedScenario.risk_matrix.brand} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Competitor War Game */}
                     <div className="bg-red-950/20 border border-red-500/20 rounded-xl p-5">
-                        <div className="flex items-center gap-2 text-red-400 font-bold text-sm mb-3">
-                            <Swords className="w-4 h-4" />
-                            GAME THEORY: COMPETITOR REACTION
+                        <div className="flex items-center gap-2 text-red-400 font-bold text-sm mb-3 uppercase">
+                            <Swords className="w-4 h-4" /> Game Theory Analysis
                         </div>
-                        <p className="text-slate-200 leading-relaxed">
-                            {selectedScenario.competitor_reaction}
-                        </p>
-                        <div className="mt-3 text-xs text-red-300/60 font-mono">
-                            Probability of retaliation: High
-                        </div>
+                        <p className="text-slate-200 leading-relaxed">{selectedScenario.competitor_reaction}</p>
                     </div>
 
-                    {/* Section 2: Timeline */}
+                    {/* Timeline */}
                     <div>
-                        <div className="flex items-center gap-2 text-slate-400 font-bold text-sm mb-4">
-                            <Calendar className="w-4 h-4" />
-                            OUTCOME PROJECTIONS
+                        <div className="flex items-center gap-2 text-slate-400 font-bold text-sm mb-4 uppercase">
+                            <Calendar className="w-4 h-4" /> Outcomes
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-slate-900 p-4 rounded-lg border border-slate-800">
-                                <span className="text-xs text-cyan-500 font-bold block mb-2">SHORT TERM (3 MONTHS)</span>
+                                <span className="text-xs text-cyan-500 font-bold block mb-2">3 MONTHS</span>
                                 <p className="text-sm text-slate-300">{selectedScenario.outcome_3m}</p>
                             </div>
                             <div className="bg-slate-900 p-4 rounded-lg border border-slate-800">
-                                <span className="text-xs text-purple-500 font-bold block mb-2">LONG TERM (12 MONTHS)</span>
+                                <span className="text-xs text-purple-500 font-bold block mb-2">12 MONTHS</span>
                                 <p className="text-sm text-slate-300">{selectedScenario.outcome_12m}</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Section 3: Risk Analysis */}
-                    <div>
-                         <div className="flex items-center gap-2 text-slate-400 font-bold text-sm mb-4">
-                            <AlertTriangle className="w-4 h-4" />
-                            RISK VS. REWARD
-                        </div>
-                        <div className="space-y-3">
-                             <div className="flex justify-between text-sm">
-                                <span className="text-slate-400">Success Probability</span>
-                                <span className="text-white font-bold">{selectedScenario.risk_score}%</span>
-                             </div>
-                             <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                                <motion.div 
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${selectedScenario.risk_score}%` }}
-                                    transition={{ duration: 1, ease: "easeOut" }}
-                                    className="h-full bg-linear-to-r from-emerald-500 to-cyan-500"
-                                />
-                             </div>
-                             <p className="text-xs text-slate-500 mt-2">
-                                * Calculated based on market volatility and competitor aggression indices.
-                             </p>
-                        </div>
-                    </div>
                 </div>
-
-                <div className="p-4 border-t border-slate-800 bg-slate-900/50 text-center">
-                    <button 
-                        onClick={() => setSelectedScenario(null)}
-                        className="text-sm text-slate-400 hover:text-white transition"
-                    >
-                        Close Report
-                    </button>
-                </div>
-
               </motion.div>
             </motion.div>
           )}
@@ -424,4 +380,32 @@ export default function LivingStrategicTwin() {
       </main>
     </div>
   );
+}
+
+// --- HELPER COMPONENTS ---
+
+function getRiskColor(level: string) {
+    switch(level) {
+        case "High": return "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]";
+        case "Medium": return "bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]";
+        case "Low": return "bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]";
+        default: return "bg-slate-500";
+    }
+}
+
+function RiskCard({ icon, label, level }: { icon: any, label: string, level: string }) {
+    const colorClass = getRiskColor(level);
+    
+    return (
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between group hover:border-slate-700 transition">
+            <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg bg-slate-800 text-slate-300`}>{icon}</div>
+                <span className="font-medium text-slate-200">{label}</span>
+            </div>
+            <div className="flex items-center gap-3">
+                <span className="text-xs text-slate-500 uppercase font-bold">{level} Risk</span>
+                <div className={`w-3 h-3 rounded-full ${colorClass}`}></div>
+            </div>
+        </div>
+    );
 }

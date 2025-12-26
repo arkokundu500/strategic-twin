@@ -29,17 +29,17 @@ export async function POST(req: Request) {
       Options: ${options}
 
       TASKS:
-      1. ANALYZE COMPETITORS: Identify the primary competitor. Predict their "Dominant Strategy" (Game Theory).
+      1. ANALYZE COMPETITORS: Identify the primary competitor and their "Dominant Strategy".
       2. GENERATE STRATEGIES: Create 3 scenarios.
-      3. CREATE IMPLEMENTATION DFD: For the *Recommended* strategy, generate a Data Flow Diagram (DFD) logic.
+      3. RISK MATRIX: For each scenario, assign specific High/Medium/Low levels to Financial, Legal, Market, and Brand risks.
 
       OUTPUT JSON SCHEMA:
       {
         "twin_status": "Synced with Live Market Model",
         "competitor_profile": {
-           "name": "String (Name of main rival)",
-           "archetype": "Aggressive Incumbent | Agile Disruptor | Fast Follower",
-           "likely_counter_move": "String (Specific reaction)",
+           "name": "String",
+           "archetype": "String",
+           "likely_counter_move": "String",
            "threat_level": "High | Critical | Moderate"
         },
         "scenarios": [
@@ -49,21 +49,23 @@ export async function POST(req: Request) {
             "outcome_3m": "String",
             "outcome_12m": "String",
             "risk_score": 85,
-            "competitor_reaction": "String"
+            "competitor_reaction": "String",
+            "risk_matrix": {
+                "financial": "High",
+                "legal": "Low",
+                "market": "Medium",
+                "brand": "Low"
+            }
           }
         ],
         "recommended_id": "1",
         "implementation_flowchart": {
           "nodes": [
-            { "id": "1", "label": "Start: Executive Approval", "type": "input" },
-            { "id": "2", "label": "Action: Reallocate Q3 Budget", "type": "process" },
-            { "id": "3", "label": "Decision: Competitor Reacts?", "type": "decision" },
-            { "id": "4", "label": "Outcome: Market Share +5%", "type": "output" }
+            { "id": "1", "label": "Start", "type": "input" },
+            { "id": "2", "label": "Action", "type": "process" }
           ],
           "edges": [
-            { "source": "1", "target": "2" },
-            { "source": "2", "target": "3" },
-            { "source": "3", "target": "4", "label": "If No Reaction" }
+            { "source": "1", "target": "2", "label": "Next" }
           ]
         }
       }
